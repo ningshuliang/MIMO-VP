@@ -28,9 +28,9 @@ To train on your own dataset, just change the dataloader.
 
 The check point will be saved in `--save_dir` and the generated frames will be saved in the `--gen_frm_dir` folder. 
 
-### Pretrain models
+### Checkpoints
 
-The pretrain model for MNIST is [Here](https://pan.baidu.com/s/1h548ndTYbYpHThTT7ed5vQ) (passwd:chpo)
+The checkpoint for MNIST is [Here](https://pan.baidu.com/s/1h548ndTYbYpHThTT7ed5vQ) (passwd:chpo)
 
 ### Prediction samples
 
