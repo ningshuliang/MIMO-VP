@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from Models import get_model
-from data.moving_mnist import MovingMNIST
+from Moving_mnist_dataset.moving_mnist import MovingMNIST
 from skimage.metrics import structural_similarity as ssim
 import os
 import cv2
