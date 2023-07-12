@@ -175,11 +175,6 @@ print('BEGIN TRAIN')
 
 model = get_model(args).to(device)
 
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-print('encoder ', count_parameters(model))
-
 if args.checkpoint_path != '':
     print('load model:', args.checkpoint_path)
     stats = torch.load(args.checkpoint_path, map_location=torch.device('cpu'))
