@@ -46,7 +46,15 @@ The comparison between MIMO-VP and other two methods.
 
 ### Citation
 
-To be release. 
+@inproceedings{ning2023mimo,
+  title={MIMO is all you need: a strong multi-in-multi-out baseline for video prediction},
+  author={Ning, Shuliang and Lan, Mengcheng and Li, Yanran and Chen, Chaofeng and Chen, Qian and Chen, Xunlai and Han, Xiaoguang and Cui, Shuguang},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={37},
+  number={2},
+  pages={1975--1983},
+  year={2023}
+}
 
 
 
