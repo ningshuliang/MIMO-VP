@@ -28,9 +28,9 @@ To train on your own dataset, just change the dataloader.
 
 The check point will be saved in `--save_dir` and the generated frames will be saved in the `--gen_frm_dir` folder. 
 
-### Checkpoints
+### Pretrain models
 
-The checkpoint for MNIST is [Here](https://pan.baidu.com/s/1h548ndTYbYpHThTT7ed5vQ) (passwd:chpo)
+The pretrain model for MNIST is [Here](https://pan.baidu.com/s/1h548ndTYbYpHThTT7ed5vQ) (passwd:chpo)
 
 ### Prediction samples
 
@@ -46,18 +46,7 @@ The comparison between MIMO-VP and other two methods.
 
 ### Citation
 
-```
-@inproceedings{ning2023mimo,
-  title={MIMO is all you need: a strong multi-in-multi-out baseline for video prediction},
-  author={Ning, Shuliang and Lan, Mengcheng and Li, Yanran and Chen, Chaofeng and Chen, Qian and Chen, Xunlai and Han, Xiaoguang and Cui, Shuguang},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  volume={37},
-  number={2},
-  pages={1975--1983},
-  year={2023}
-}
-```
-
+To be release. 
 
 
 

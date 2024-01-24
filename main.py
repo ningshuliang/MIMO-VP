@@ -11,12 +11,12 @@ import os
 import cv2
 import preprocess
 import sys
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--root', type=str, default='Moving_mnist_dataset', help='folder for dataset')
 parser.add_argument('--batch_size', type=int, default=16, help='batch_size')
-parser.add_argument('--checkpoint_path', type=str, default='mnist.pth', help='folder for dataset')
+parser.add_argument('--checkpoint_path', type=str, default='/data/AAAI/MIMO-VP/checkpoints/epoch-879/model.ckpt-879', help='folder for dataset')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning_rate')
 parser.add_argument('--n_epochs', type=int, default=1500, help='nb of epochs')
 parser.add_argument('--print_every', type=int, default=1, help='')
@@ -27,7 +27,8 @@ parser.add_argument('--patch_size', type=int, default=2)
 
 #
 parser.add_argument('-d_model', type=int, default=128)
-parser.add_argument('-n_layers', type=int, default=6)
+parser.add_argument('-n_encoder_layers', type=int, default=6)
+parser.add_argument('-n_decoder_layers', type=int, default=6)
 parser.add_argument('-heads', type=int, default=8)
 parser.add_argument('-dropout', type=int, default=0)
 
@@ -44,7 +45,7 @@ train_loader = torch.utils.data.DataLoader(dataset=mm, batch_size=args.batch_siz
                                            num_workers=4)
 
 mm = MovingMNIST(root=args.root, is_train=False, n_frames_input=10, n_frames_output=10, num_objects=[2])
-test_loader = torch.utils.data.DataLoader(dataset=mm, batch_size=16, shuffle=False, drop_last=True,
+test_loader = torch.utils.data.DataLoader(dataset=mm, batch_size=args.batch_size, shuffle=False, drop_last=True,
                                           num_workers=4)
 
 
@@ -53,7 +54,7 @@ def train_on_batch(input_tensor, target_tensor, encoder, encoder_optimizer, crit
     # input_tensor : torch.Size([batch_size, input_length, 1, 64, 64])
     encoder_optimizer.zero_grad()
     output_image = encoder(input_tensor)
-    target_tensor = torch.cat([target_tensor] * 10, dim=2)
+    target_tensor = torch.cat([target_tensor] * args.n_decoder_layers, dim=2)
     loss = 10 * criterion1(output_image, target_tensor) + criterion2(output_image, target_tensor)
     loss.backward()
     encoder_optimizer.step()
@@ -105,55 +106,52 @@ def evaluate(encoder, loader):
 
     with torch.no_grad():
         for id, out in enumerate(loader, 0):
+           
             # input_batch = torch.Size([8, 20, 1, 64, 64])
             input_tensor = out[1].to(device)
             input_tensor = preprocess.reshape_patch(input_tensor, args.patch_size)
             target_tensor = out[2].to(device)
-
-            input_length = input_tensor.size(1)
-            target_length = target_tensor.size(1)
-     
             predictions = encoder(input_tensor)[:,:,-4:,]
             predictions = preprocess.reshape_patch_back(predictions, args.patch_size)
-            predictions1 = predictions
             predictions= predictions.cpu().numpy()
 
             input_tensor = preprocess.reshape_patch_back(input_tensor, args.patch_size)
             input = input_tensor.cpu().numpy()
             target = target_tensor.cpu().numpy()
+            
         
 
-            # save prediction examples
-            # if id < 200:
-            #     path = os.path.join(args.gen_frm_dir, str(id))
-            #     if not os.path.exists(path):
-            #         os.makedirs(path)
-            #     for i in range(10):
-            #         name = 'gt' + str(i + 1) + '.png'
-            #         # name = str(i + 1).zfill(2) + '.png'
-            #         file_name = os.path.join(path, name)
-            #         img_gt = np.uint8(input[0, i, :, :, :] * 255)
-            #         img_gt = np.transpose(img_gt, [1, 2, 0])
-            #         cv2.imwrite(file_name, img_gt)
+            #save prediction examples
+            if id < 20:
+                path = os.path.join(args.gen_frm_dir, str(id))
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                for i in range(10):
+                    name = 'gt' + str(i + 1) + '.png'
+                    # name = str(i + 1).zfill(2) + '.png'
+                    file_name = os.path.join(path, name)
+                    img_gt = np.uint8(input[0, i, :, :, :] * 255)
+                    img_gt = np.transpose(img_gt, [1, 2, 0])
+                    cv2.imwrite(file_name, img_gt)
 
-            #     for i in range(10):
-            #         name = 'gt' + str(i + 11) + '.png'
-            #         # name = str(i + 11).zfill(2) + '.png'
-            #         file_name = os.path.join(path, name)
-            #         img_gt = np.uint8(target[0, i, :, :, :] * 255)
-            #         img_gt = np.transpose(img_gt, [1, 2, 0])
-            #         cv2.imwrite(file_name, img_gt)
+                for i in range(10):
+                    name = 'gt' + str(i + 11) + '.png'
+                    # name = str(i + 11).zfill(2) + '.png'
+                    file_name = os.path.join(path, name)
+                    img_gt = np.uint8(target[0, i, :, :, :] * 255)
+                    img_gt = np.transpose(img_gt, [1, 2, 0])
+                    cv2.imwrite(file_name, img_gt)
 
-            #     for i in range(10):
-            #         name = 'pd' + str(i + 11) + '.png'
-            #         # name = str(i + 21).zfill(2) + '.png'
-            #         file_name = os.path.join(path, name)
-            #         img_pd = predictions[0, i, :, :, :]
-            #         img_pd = np.maximum(img_pd, 0)
-            #         img_pd = np.minimum(img_pd, 1)
-            #         img_pd = np.uint8(img_pd * 255)
-            #         img_pd = np.transpose(img_pd, [1, 2, 0])
-            #         cv2.imwrite(file_name, img_pd)
+                for i in range(10):
+                    name = 'pd' + str(i + 11) + '.png'
+                    # name = str(i + 21).zfill(2) + '.png'
+                    file_name = os.path.join(path, name)
+                    img_pd = predictions[0, i, :, :, :]
+                    img_pd = np.maximum(img_pd, 0)
+                    img_pd = np.minimum(img_pd, 1)
+                    img_pd = np.uint8(img_pd * 255)
+                    img_pd = np.transpose(img_pd, [1, 2, 0])
+                    cv2.imwrite(file_name, img_pd)
 
 
 
@@ -174,7 +172,12 @@ def evaluate(encoder, loader):
 print('BEGIN TRAIN')
 
 model = get_model(args).to(device)
+model = nn.DataParallel(model).to(device)
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+print('encoder ', count_parameters(model))
+# sys.exit()
 if args.checkpoint_path != '':
     print('load model:', args.checkpoint_path)
     stats = torch.load(args.checkpoint_path, map_location=torch.device('cpu'))
@@ -182,4 +185,5 @@ if args.checkpoint_path != '':
     # plot_losses = trainIters(model, args.n_epochs, print_every=args.print_every, eval_every=args.eval_every)
     mse, mae, ssim = evaluate(model, test_loader)
 else:
+    # mse, mae, ssim = evaluate(model, test_loader)
     plot_losses = trainIters(model, args.n_epochs, print_every=args.print_every, eval_every=args.eval_every)
